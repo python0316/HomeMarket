@@ -1,4 +1,4 @@
-from .apartment import ApartmentListAPIView
+from .apartment import ApartmentListAPIView, ApartmentDetailAPIView
 from .contract_cancel import ContractCancelAPIView
 from .contract_create import ContractCreateAPIView
 from .contract_list import ContractListAPIView

@@ -14,40 +14,110 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+"""
+URL configuration for core project.
+"""
+
 from django.contrib import admin
 from django.urls import include, path
+
+from rest_framework import permissions
+
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-# Swagger uchun kerakli kutubxonalar import qilindi
-from rest_framework import permissions
+
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-# Swagger sxemasini sozlash
+
+# =========================================================
+# Swagger
+# =========================================================
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Real Estate API",
-        default_version='v1',
-        description="Ko'chmas mulk loyihasi uchun barcha API'lar ro'yxati va hujjatnomasi",
+        default_version="v1",
+        description=(
+            "Ko'chmas mulk loyihasi uchun "
+            "barcha API'lar ro'yxati va hujjatnomasi"
+        ),
         terms_of_service="https://www.google.com/policies/terms/",
-        contact=openapi.Contact(email="support@realestate.local"),
-        license=openapi.License(name="BSD License"),
+        contact=openapi.Contact(
+            email="support@realestate.local"
+        ),
+        license=openapi.License(
+            name="BSD License"
+        ),
     ),
     public=True,
-    permission_classes=(permissions.AllowAny,),
+    permission_classes=(
+        permissions.AllowAny,
+    ),
 )
 
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/v1/', include('realestate.urls')),
 
-    # JWT Login yo'llari:
-    path('api/v1/auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/v1/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # =====================================================
+    # Django Admin
+    # =====================================================
 
-    # Swagger va ReDoc yo'llari:
-    path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path(
+        "admin/",
+        admin.site.urls,
+    ),
+
+    # =====================================================
+    # HomeMarket API v1
+    # =====================================================
+
+    path(
+        "api/v1/",
+        include("realestate.urls"),
+    ),
+
+    # =====================================================
+    # JWT Authentication
+    # =====================================================
+
+    path(
+        "api/v1/auth/login/",
+        TokenObtainPairView.as_view(),
+        name="token_obtain_pair",
+    ),
+
+    path(
+        "api/v1/auth/refresh/",
+        TokenRefreshView.as_view(),
+        name="token_refresh",
+    ),
+
+    # =====================================================
+    # Swagger
+    # =====================================================
+
+    path(
+        "",
+        schema_view.with_ui(
+            "swagger",
+            cache_timeout=0,
+        ),
+        name="schema-swagger-ui",
+    ),
+
+    # =====================================================
+    # ReDoc
+    # =====================================================
+
+    path(
+        "redoc/",
+        schema_view.with_ui(
+            "redoc",
+            cache_timeout=0,
+        ),
+        name="schema-redoc",
+    ),
 ]

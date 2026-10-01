@@ -28,7 +28,9 @@ class Contract(models.Model):
   )
 
   client = models.ForeignKey(
-      User, on_delete=models.CASCADE, limit_choices_to={"is_client": True}
+      User,
+      on_delete=models.PROTECT,
+      limit_choices_to={"is_client": True},
   )
   apartment = models.ForeignKey(Apartment, on_delete=models.PROTECT)
   payment_plan = models.ForeignKey(PaymentPlan, on_delete=models.PROTECT)
@@ -48,27 +50,52 @@ class Contract(models.Model):
 
 
 class PaymentSchedule(models.Model):
-  STATUS_CHOICES = [
-      ('pending', 'Kutilmoqda'),
-      ('paid', "To'langan"),
-      ('overdue', "Muddati o'tgan"),
-  ]
+    STATUS_CHOICES = [
+        ('pending', 'Kutilmoqda'),
+        ('paid', "To'langan"),
+        ('overdue', "Muddati o'tgan"),
+    ]
 
-  contract = models.ForeignKey(
-      Contract, on_delete=models.CASCADE, related_name='payment_schedules'
-  )
-  month_number = models.IntegerField(
-      help_text="Nechanchi oy ekanligi (1, 2, 3...)"
-  )
-  amount = models.DecimalField(max_digits=12, decimal_places=2)
-  due_date = models.DateField(help_text="To'lov qilinishi kerak bo'lgan sana")
-  status = models.CharField(
-      max_length=20, choices=STATUS_CHOICES, default='pending'
-  )  # <-- max_digits olib tashlandi
-  paid_at = models.DateTimeField(null=True, blank=True)
-
-  def __str__(self):
-    return (
-        f"Shartnoma #{self.contract.contract_number} -"
-        f" {self.month_number}-oy ({self.amount})"
+    contract = models.ForeignKey(
+        Contract,
+        on_delete=models.CASCADE,
+        related_name='payment_schedules'
     )
+
+    month_number = models.IntegerField(
+        help_text="Nechanchi oy ekanligi (1, 2, 3...)"
+    )
+
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2
+    )
+
+    due_date = models.DateField(
+        help_text="To'lov qilinishi kerak bo'lgan sana"
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+
+    paid_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['contract', 'month_number'],
+                name='unique_contract_month'
+            )
+        ]
+
+    def __str__(self):
+        return (
+            f"Shartnoma #{self.contract.contract_number} - "
+            f"{self.month_number}-oy ({self.amount})"
+        )
